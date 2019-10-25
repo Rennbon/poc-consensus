@@ -1,12 +1,12 @@
 package storage
 
 import (
+	"github.com/rennbon/consensus/util"
 	"math"
 	"math/big"
 	"path/filepath"
 	"strconv"
 	"strings"
-	//"path/filepath"
 )
 
 type PlotFile struct {
@@ -26,8 +26,9 @@ type PlotFile struct {
 
 func NewPlotFile(path string, chunkPartNonces int64) *PlotFile {
 	pf := &PlotFile{
-		filePath:        path,
-		chunkPartNonces: chunkPartNonces,
+		filePath:             path,
+		chunkPartNonces:      chunkPartNonces,
+		chunkPartStartNonces: make(map[string]int64),
 	}
 	fileName := filepath.Base(path)
 	pf.fileName = fileName
@@ -37,11 +38,24 @@ func NewPlotFile(path string, chunkPartNonces int64) *PlotFile {
 	pf.plots, _ = strconv.ParseInt(parts[2], 10, 64)
 	if len(parts) > 3 {
 		pf.pocVersion = POC_1
-		staggeramt, _ := strconv.ParseInt(parts[3], 10, 64)
-		pf.numOfParts = pf.calculateNumberOfParts(staggeramt)
-		pf.numOfChunks = pf.plots / staggeramt
+		pf.staggeramt, _ = strconv.ParseInt(parts[3], 10, 64)
+		pf.numOfParts = pf.calculateNumberOfParts(pf.staggeramt)
+		pf.numOfChunks = pf.plots / pf.staggeramt
+	} else {
+		pf.pocVersion = POC_2
+		pf.staggeramt = pf.plots
+		pf.numOfParts = pf.calculateNumberOfParts(pf.staggeramt)
+		pf.numOfChunks = 1
 	}
-
+	pf.size = pf.numOfChunks * pf.staggeramt * int64(util.PLOT_SIZE)
+	chunkPartSize := pf.size / pf.numOfChunks / pf.numOfParts
+	for chunkNumber := int64(0); chunkNumber < pf.numOfChunks; chunkNumber++ {
+		for partNumber := int64(0); partNumber < pf.numOfParts; partNumber++ {
+			// register a unique key for identification
+			chunkPartStartNonce := big.NewInt(0).Add(pf.startNonce, big.NewInt(0).SetInt64(chunkNumber*pf.staggeramt+partNumber*(pf.staggeramt/pf.numOfParts)))
+			pf.chunkPartStartNonces[chunkPartStartNonce.String()] = chunkPartSize
+		}
+	}
 	return pf
 }
 func (o *PlotFile) GetSize() int64 {
