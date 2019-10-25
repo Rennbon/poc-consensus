@@ -192,16 +192,98 @@ func NewCoreProperties(c *PropertiesConfig) (*CoreProperties, error) {
 	}
 	return m, nil
 }
+
 func (o *CoreProperties) GetReadProgressPerRound() int {
-	if o.readProgressPerRound == 0 {
-		o.readProgressPerRound = DEFAULT_READ_PROGRESS_PER_ROUND
-	}
 	return o.readProgressPerRound
 }
 func (o *CoreProperties) GetRefreshInterval() int64 {
-	if o.refreshInterval == 0 {
-
-		o.refreshInterval = DEFAULT_REFRESH_INTERVAL
-	}
 	return o.refreshInterval
+}
+func (o *CoreProperties) GetConnectionTimeout() int64 {
+	return o.connectionTimeout
+}
+func (o *CoreProperties) GetWinnerRetriesOnAsync() int {
+	return o.winnerRetriesOnAsync
+}
+func (o *CoreProperties) GetWinnerRetryIntervalInMs() int64 {
+	return o.winnerRetryIntervalInMs
+}
+func (o *CoreProperties) GetScanPathsEveryRound() bool {
+	return o.scanPathsEveryRound
+}
+func (o *CoreProperties) GetPoolMining() bool {
+	return o.poolMining
+}
+func (o *CoreProperties) GetForceLocalTargetDeadline() bool {
+	return o.forceLocalTargetDeadline
+}
+func (o *CoreProperties) GetDynamicTargetDeadline() bool {
+	return o.dynamicTargetDeadline
+}
+
+func (o *CoreProperties) GetTargetDeadline() int64 {
+	return o.targetDeadline
+}
+func (o *CoreProperties) GetPlotPaths() []string {
+	return o.plotPaths
+}
+func (o *CoreProperties) GetChunkPartNonces() int64 {
+	return o.chunkPartNonces
+}
+func (o *CoreProperties) GetUseOpenCl() bool {
+	return o.useOpenCl
+}
+func (o *CoreProperties) GetDeviceId() int {
+	return o.deviceId
+}
+func (o *CoreProperties) GetPlatformId() int {
+	return o.platformId
+}
+func (o *CoreProperties) GetWalletServer() string {
+	return o.walletServer
+}
+func (o *CoreProperties) GetNumericAccountId() string {
+	return o.numericAccountId
+}
+func (o *CoreProperties) GetSoloServer() string {
+	return o.soloServer
+}
+func (o *CoreProperties) GetPassPhrase() string {
+	return o.passPhrase
+}
+func (o *CoreProperties) GetPoolServer() string {
+	return o.poolServer
+}
+func (o *CoreProperties) GetByteUnitDecimal() bool {
+	return o.byteUnitDecimal
+}
+func (o *CoreProperties) GetListPlotFiles() bool {
+	return o.listPlotFiles
+}
+func (o *CoreProperties) GetShowDriveInfo() bool {
+	return o.showDriveInfo
+}
+func (o *CoreProperties) GetShowSkippedDeadlines() bool {
+	return o.showSkippedDeadlines
+}
+func (o *CoreProperties) GetReaderThreads() int {
+	return o.readerThreads
+}
+func (o *CoreProperties) GetWriteLogFile() bool {
+	return o.writeLogFile
+}
+func (o *CoreProperties) GetDebug() bool {
+	return o.debug
+}
+func (o *CoreProperties) GetLogFilePath() string {
+	return o.logFilePath
+}
+func (o *CoreProperties) GetLogPatternFile() string {
+	return o.logPatternFile
+}
+func (o *CoreProperties) GetLogPatternConsole() string {
+	return o.logPatternConsole
+}
+func (o *CoreProperties) GetUpdateMiningInfo() bool {
+	return o.updateMiningInfo
 }
