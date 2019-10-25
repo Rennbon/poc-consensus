@@ -7,7 +7,7 @@ type PlotDrive struct {
 	directory string
 }
 
-func NewPlotDrive(directory string, plotFilePaths []string, chunkPartNonces int64) {
+func NewPlotDrive(directory string, plotFilePaths []string, chunkPartNonces int64) *PlotDrive {
 	o := &PlotDrive{
 		directory: directory,
 		plotFiles: make([]*PlotFile, 0, len(plotFilePaths)),
@@ -19,6 +19,7 @@ func NewPlotDrive(directory string, plotFilePaths []string, chunkPartNonces int6
 			log.Print("could not calculate valid numOfParts" + v)
 		}
 	}
+	return o
 }
 
 func (o *PlotDrive) GetPlotFiles() []*PlotFile {

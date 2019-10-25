@@ -5,6 +5,8 @@ import (
 	"log"
 )
 
+var CoreProperties *coreProperties
+
 const (
 	STRING_LIST_PROPERTY_DELIMITER = ","
 
@@ -31,10 +33,10 @@ const (
 	DEFAULT_DEBUG                       = false
 	DEFAULT_WRITE_LOG_FILE              = false
 	DEFAULT_UPDATE_MINING_INFO          = true
-	DEFAULT_LOG_FILE_PATH               = "log/jminer.log.txt"
+	DEFAULT_LOG_FILE_PATH               = "log/rennbon.log"
 )
 
-type CoreProperties struct {
+type coreProperties struct {
 	readProgressPerRound     int
 	refreshInterval          int64
 	connectionTimeout        int64
@@ -68,8 +70,8 @@ type CoreProperties struct {
 	updateMiningInfo         bool
 }
 
-func NewCoreProperties(c *PropertiesConfig) (*CoreProperties, error) {
-	m := &CoreProperties{
+func NewCoreProperties(c *PropertiesConfig) (*coreProperties, error) {
+	m := &coreProperties{
 		readProgressPerRound:     c.ReadProgressPerRound,
 		refreshInterval:          c.RefreshInterval,
 		connectionTimeout:        c.ConnectionTimeout,
@@ -190,100 +192,101 @@ func NewCoreProperties(c *PropertiesConfig) (*CoreProperties, error) {
 	if !c.UpdateMiningInfo {
 		m.updateMiningInfo = DEFAULT_UPDATE_MINING_INFO
 	}
+	CoreProperties = m
 	return m, nil
 }
 
-func (o *CoreProperties) GetReadProgressPerRound() int {
+func (o *coreProperties) GetReadProgressPerRound() int {
 	return o.readProgressPerRound
 }
-func (o *CoreProperties) GetRefreshInterval() int64 {
+func (o *coreProperties) GetRefreshInterval() int64 {
 	return o.refreshInterval
 }
-func (o *CoreProperties) GetConnectionTimeout() int64 {
+func (o *coreProperties) GetConnectionTimeout() int64 {
 	return o.connectionTimeout
 }
-func (o *CoreProperties) GetWinnerRetriesOnAsync() int {
+func (o *coreProperties) GetWinnerRetriesOnAsync() int {
 	return o.winnerRetriesOnAsync
 }
-func (o *CoreProperties) GetWinnerRetryIntervalInMs() int64 {
+func (o *coreProperties) GetWinnerRetryIntervalInMs() int64 {
 	return o.winnerRetryIntervalInMs
 }
-func (o *CoreProperties) GetScanPathsEveryRound() bool {
+func (o *coreProperties) GetScanPathsEveryRound() bool {
 	return o.scanPathsEveryRound
 }
-func (o *CoreProperties) GetPoolMining() bool {
+func (o *coreProperties) GetPoolMining() bool {
 	return o.poolMining
 }
-func (o *CoreProperties) GetForceLocalTargetDeadline() bool {
+func (o *coreProperties) GetForceLocalTargetDeadline() bool {
 	return o.forceLocalTargetDeadline
 }
-func (o *CoreProperties) GetDynamicTargetDeadline() bool {
+func (o *coreProperties) GetDynamicTargetDeadline() bool {
 	return o.dynamicTargetDeadline
 }
 
-func (o *CoreProperties) GetTargetDeadline() int64 {
+func (o *coreProperties) GetTargetDeadline() int64 {
 	return o.targetDeadline
 }
-func (o *CoreProperties) GetPlotPaths() []string {
+func (o *coreProperties) GetPlotPaths() []string {
 	return o.plotPaths
 }
-func (o *CoreProperties) GetChunkPartNonces() int64 {
+func (o *coreProperties) GetChunkPartNonces() int64 {
 	return o.chunkPartNonces
 }
-func (o *CoreProperties) GetUseOpenCl() bool {
+func (o *coreProperties) GetUseOpenCl() bool {
 	return o.useOpenCl
 }
-func (o *CoreProperties) GetDeviceId() int {
+func (o *coreProperties) GetDeviceId() int {
 	return o.deviceId
 }
-func (o *CoreProperties) GetPlatformId() int {
+func (o *coreProperties) GetPlatformId() int {
 	return o.platformId
 }
-func (o *CoreProperties) GetWalletServer() string {
+func (o *coreProperties) GetWalletServer() string {
 	return o.walletServer
 }
-func (o *CoreProperties) GetNumericAccountId() string {
+func (o *coreProperties) GetNumericAccountId() string {
 	return o.numericAccountId
 }
-func (o *CoreProperties) GetSoloServer() string {
+func (o *coreProperties) GetSoloServer() string {
 	return o.soloServer
 }
-func (o *CoreProperties) GetPassPhrase() string {
+func (o *coreProperties) GetPassPhrase() string {
 	return o.passPhrase
 }
-func (o *CoreProperties) GetPoolServer() string {
+func (o *coreProperties) GetPoolServer() string {
 	return o.poolServer
 }
-func (o *CoreProperties) GetByteUnitDecimal() bool {
+func (o *coreProperties) GetByteUnitDecimal() bool {
 	return o.byteUnitDecimal
 }
-func (o *CoreProperties) GetListPlotFiles() bool {
+func (o *coreProperties) GetListPlotFiles() bool {
 	return o.listPlotFiles
 }
-func (o *CoreProperties) GetShowDriveInfo() bool {
+func (o *coreProperties) GetShowDriveInfo() bool {
 	return o.showDriveInfo
 }
-func (o *CoreProperties) GetShowSkippedDeadlines() bool {
+func (o *coreProperties) GetShowSkippedDeadlines() bool {
 	return o.showSkippedDeadlines
 }
-func (o *CoreProperties) GetReaderThreads() int {
+func (o *coreProperties) GetReaderThreads() int {
 	return o.readerThreads
 }
-func (o *CoreProperties) GetWriteLogFile() bool {
+func (o *coreProperties) GetWriteLogFile() bool {
 	return o.writeLogFile
 }
-func (o *CoreProperties) GetDebug() bool {
+func (o *coreProperties) GetDebug() bool {
 	return o.debug
 }
-func (o *CoreProperties) GetLogFilePath() string {
+func (o *coreProperties) GetLogFilePath() string {
 	return o.logFilePath
 }
-func (o *CoreProperties) GetLogPatternFile() string {
+func (o *coreProperties) GetLogPatternFile() string {
 	return o.logPatternFile
 }
-func (o *CoreProperties) GetLogPatternConsole() string {
+func (o *coreProperties) GetLogPatternConsole() string {
 	return o.logPatternConsole
 }
-func (o *CoreProperties) GetUpdateMiningInfo() bool {
+func (o *coreProperties) GetUpdateMiningInfo() bool {
 	return o.updateMiningInfo
 }
