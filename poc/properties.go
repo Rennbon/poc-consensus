@@ -158,11 +158,13 @@ func NewCoreProperties(c *PropertiesConfig) (*coreProperties, error) {
 	if c.SoloServer == "" {
 		m.soloServer = DEFAULT_SOLO_SERVER
 	}
-	if c.PassPhrase == "" {
-		return nil, errors.New("property 'passPhrase' is required for solo-mining!")
-	}
-	if c.PoolServer == "" {
-		return nil, errors.New("property 'poolServer' is required for pool-mining!")
+	if m.soloServer == DEFAULT_SOLO_SERVER {
+		if c.PassPhrase == "" {
+			return nil, errors.New("property 'passPhrase' is required for solo-mining!")
+		}
+		if c.PoolServer == "" {
+			return nil, errors.New("property 'poolServer' is required for pool-mining!")
+		}
 	}
 	if !c.ByteUnitDecimal {
 		m.byteUnitDecimal = DEFAULT_BYTE_UNIT_DECIMAL

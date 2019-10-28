@@ -1,9 +1,12 @@
 package util
 
-import "testing"
+import (
+	"github.com/rennbon/consensus/poc"
+	"testing"
+)
 
 func TestNewMiningPlot(t *testing.T) {
-
-	plot := NewMiningPlot(0xABCDEF, 2000)
+	poc.NewCoreProperties()
+	plot := NewMiningPlot(201910271200, 100500)
 	t.Log(plot)
 }

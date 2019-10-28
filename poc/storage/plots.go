@@ -3,9 +3,9 @@ package storage
 import (
 	"github.com/rennbon/consensus/poc"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"log"
 	"math/big"
-	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -34,16 +34,16 @@ func NewPlots(numericAccountId string) *plots {
 	plotFilesLookup := collectPlotFiles(poc.CoreProperties.GetPlotPaths(), numericAccountId)
 	for k, v := range plotFilesLookup {
 		pd := NewPlotDrive(k, v, poc.CoreProperties.GetChunkPartNonces())
-		if len(pd.GetPlotFiles()) == 0 {
+		if len(pd.GetPlotFiles()) > 0 {
 			o.plotDrives = append(o.plotDrives, pd)
 			ccpsn := pd.collectChunkPartStartNonces()
 			expectedSize := len(o.chunkPartStartNonces) + len(ccpsn)
 			for ki, vi := range ccpsn {
 				o.chunkPartStartNonces[ki] = vi
-				if expectedSize != len(o.chunkPartStartNonces) {
-					logrus.Error("possible duplicate/overlapping plot-file on drive '" + pd.GetDirectory() + "' please check your plots.")
+			}
+			if expectedSize != len(o.chunkPartStartNonces) {
+				logrus.Error("possible duplicate/overlapping plot-file on drive '" + pd.GetDirectory() + "' please check your plots.")
 
-				}
 			}
 		} else {
 			logrus.Info("No plotfiles found at '" + pd.GetDirectory() + "' ... will be ignored.")
@@ -56,12 +56,14 @@ func collectPlotFiles(plotDirectories []string, numericAccountId string) map[str
 	//val []path
 	plotFilesLookup := make(map[string][]string)
 	for _, plotDirectory := range plotDirectories {
-
-		files, _ := filepath.Glob(plotDirectory)
+		files, _ := ioutil.ReadDir(plotDirectory) //读取目录下文件
 		plotFilePaths := make([]string, 0, len(files))
 		for _, fp := range files {
-			if strings.Contains(fp, numericAccountId) {
-				plotFilePaths = append(plotFilePaths, fp)
+			if fp.IsDir() {
+				continue
+			}
+			if strings.Contains(fp.Name(), numericAccountId) {
+				plotFilePaths = append(plotFilePaths, fp.Name())
 			}
 		}
 		plotFilesLookup[plotDirectory] = plotFilePaths

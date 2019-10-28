@@ -32,14 +32,15 @@ func (o *PlotDrive) collectChunkPartStartNonces() map[string]int64 {
 	m := make(map[string]int64)
 	for _, v := range o.plotFiles {
 		cpsn := v.getChunkPartStartNonces()
+		expectedSize := len(m) + len(cpsn)
 		for ki, vi := range cpsn {
 			m[ki] = vi
 		}
-		expectedSize := len(m) + len(cpsn)
 		if expectedSize != len(m) {
 			log.Print("possible overlapping plot-file '" + v.GetFilePath() + "', please check your plots.")
 		}
 	}
+
 	return m
 }
 func (o *PlotDrive) GetSize() int64 {

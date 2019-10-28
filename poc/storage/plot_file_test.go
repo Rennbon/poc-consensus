@@ -11,6 +11,6 @@ func TestAA(t *testing.T) {
 }
 
 func TestNewPlotFile(t *testing.T) {
-	pf := NewPlotFile("/Users/rennbon/poc/test.log", 100)
+	pf := NewPlotFile("/Users/rennbon/Downloads/Plots/201910271200_200000_320", 1)
 	t.Log(pf)
 }
