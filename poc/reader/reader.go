@@ -24,5 +24,9 @@ type reader struct {
 }
 
 func NewReader() *reader {
+	return nil
+}
+
+func (o *reader) read(previousBlockNumber, blockNumber int64, generationSignature []byte, scoopNumber int, lastBestComittedDeadline int64, networkQuality int) {
 
 }
