@@ -10,7 +10,7 @@ type Network struct {
 	timer               time.Timer
 	generationSignature []byte
 	mac                 string //unique system id
-	plots               storage.Plots
+	plots               plots.Plots
 }
 
 func NewNetwork() *Network {

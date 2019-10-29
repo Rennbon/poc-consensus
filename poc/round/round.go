@@ -3,7 +3,7 @@ package round
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/rennbon/consensus/poc/storage"
+	"github.com/rennbon/consensus/poc/plots"
 	"github.com/rennbon/consensus/util"
 	"math/big"
 	"time"
@@ -25,7 +25,7 @@ type Round struct {
 	lowestCommitted *big.Int
 
 	runningChunkPartStartNonces []*big.Int
-	plots                       storage.Plots
+	plots                       plots.Plots
 	generationSignature         []byte
 
 	// generationSignature
@@ -35,7 +35,7 @@ type Round struct {
 	networkFailCount    int64
 }
 
-func (o *Round) initNewRound(plots storage.Plots) {
+func (o *Round) initNewRound(plots plots.Plots) {
 
 }
 
@@ -47,8 +47,8 @@ func (o *Round) isCurrentRound(currentBlockNumber int64, currentGenerationSignat
 func (o *Round) calcScoopNumber(blockNumber int64, generationSignature []byte) int64 {
 	if blockNumber > 0 && generationSignature != nil {
 		buf := make([]byte, 32+8)
-
-		buf[:32] = generationSignature
+		copy(buf[:32], generationSignature)
+		//buf[:32] = generationSignature
 		binary.LittleEndian.PutUint64(buf[32:], uint64(blockNumber))
 		// generate new scoop number
 		md := util.NewShabal256()

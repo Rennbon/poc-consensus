@@ -1,4 +1,4 @@
-package storage
+package plots
 
 import (
 	"github.com/rennbon/consensus/poc"
@@ -12,10 +12,10 @@ func TestNewPlots(t *testing.T) {
 		PlotPaths:        []string{"/Users/rennbon/Downloads/Plots/"},
 	})
 	p := NewPlots("201910271200")
-	/*for k, v := range p.GetChunkPartStartNonces() {
+	for k, v := range p.GetChunkPartStartNonces() {
 		t.Log(k, v)
-	}*/
-	p.printPlotFiles()
+	}
+
 }
 
 func Test_collectPlotFiles(t *testing.T) {

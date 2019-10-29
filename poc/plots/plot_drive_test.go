@@ -1,4 +1,4 @@
-package storage
+package plots
 
 import "testing"
 

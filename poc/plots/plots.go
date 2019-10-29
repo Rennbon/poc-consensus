@@ -1,16 +1,16 @@
-package storage
+package plots
 
 import (
 	"github.com/rennbon/consensus/poc"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"log"
-	"math/big"
 	"strconv"
 	"strings"
 )
 
 type Plots interface {
+	GetSize() int64
 	GetPlotDrives() []*PlotDrive
 	printPlotFiles()
 	/* gets plot file by plot file start nonce. */
@@ -19,7 +19,7 @@ type Plots interface {
 	GetChunkPartStartNonces() map[string]int64
 
 	/* gets plot file by chunk part start nonce. */
-	GetPlotFileByChunkPartStartNonce(chunkPartStartNonce *big.Int) *PlotFile
+	GetPlotFileByChunkPartStartNonce(chunkPartStartNonce string) *PlotFile
 }
 type plots struct {
 	plotDrives           []*PlotDrive
@@ -108,10 +108,10 @@ func (o *plots) GetChunkPartStartNonces() map[string]int64 {
 }
 
 /* gets plot file by chunk part start nonce. */
-func (o *plots) GetPlotFileByChunkPartStartNonce(chunkPartStartNonce *big.Int) *PlotFile {
+func (o *plots) GetPlotFileByChunkPartStartNonce(chunkPartStartNonce string) *PlotFile {
 	for _, pd := range o.GetPlotDrives() {
 		for _, pf := range pd.GetPlotFiles() {
-			if _, ok := pf.getChunkPartStartNonces()[chunkPartStartNonce.String()]; ok {
+			if _, ok := pf.getChunkPartStartNonces()[chunkPartStartNonce]; ok {
 				return pf
 			}
 		}

@@ -1,9 +1,11 @@
-package storage
+package plots
 
 import (
 	"github.com/rennbon/consensus/util"
+	"github.com/sirupsen/logrus"
 	"math"
 	"math/big"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -127,4 +129,44 @@ func (o *PlotFile) calculateNumberOfParts(staggeramt int64) int64 {
 		}
 	}
 	return suggestedNumberOfParts
+}
+
+type LoadedPart struct {
+	ChunkPartStartNonce *big.Int
+	Scoops              []byte
+	PlotFilePath        string
+}
+
+func (o *PlotFile) GetLoadedParts(scoopNumber int64) (<-chan *LoadedPart, error) {
+	file, err := os.OpenFile(o.filePath, os.O_RDONLY, os.ModeSocket)
+	if err != nil {
+		logrus.Warn("read file failed," + err.Error())
+		return nil, nil
+	}
+	lpch := make(chan *LoadedPart, 1)
+	scoop_size := int64(util.SCOOP_SIZE)
+	currentScoopPosition := scoopNumber * o.GetStaggeramt() * scoop_size
+	partSize := o.GetStaggeramt() / o.getNumberOfParts()
+	partBuffer := make([]byte, partSize*scoop_size)
+	// optimized plotFiles only have one chunk!
+	go func() {
+		for chunkNumber := int64(0); chunkNumber < o.GetNumberOfChunks(); chunkNumber++ {
+			currentChunkPosition := chunkNumber * o.GetStaggeramt() * scoop_size
+			for partNumber := int64(0); partNumber < o.getNumberOfParts(); partNumber++ {
+				//TODO 验证区块高度和签名
+				//读流填充partBuffer
+				file.ReadAt(partBuffer, currentScoopPosition+currentChunkPosition)
+				chunkPartStartNonce := big.NewInt(0).Add(o.GetStartnonce(), big.NewInt(chunkNumber*o.GetStaggeramt()+partNumber*partSize))
+				//scoops := partBuffer
+				lp := &LoadedPart{
+					ChunkPartStartNonce: chunkPartStartNonce,
+					Scoops:              partBuffer,
+					PlotFilePath:        o.GetFilePath(),
+				}
+				lpch <- lp
+			}
+		}
+		close(lpch)
+	}()
+	return lpch, nil
 }

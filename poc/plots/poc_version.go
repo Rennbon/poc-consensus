@@ -1,4 +1,4 @@
-package storage
+package plots
 
 type PocVersion int
 
