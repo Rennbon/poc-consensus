@@ -7,8 +7,12 @@ import (
 )
 
 func TestNewOCLChecker(t *testing.T) {
-	NewOCLChecker(1, 2)
-
+	oclchecker, err := NewOCLChecker(0, 2)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Log(oclchecker)
 }
 func TestCl(t *testing.T) {
 	ids := make([]cl.PlatformID, 1)
