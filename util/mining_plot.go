@@ -12,6 +12,8 @@ const (
 	SCOOPS_PER_PLOT  int = 4096 // original 1MB/plot = 16384
 	PLOT_SIZE        int = SCOOPS_PER_PLOT * SCOOP_SIZE
 	HASH_CAP         int = 4096
+
+	GEN_SIZE = PLOT_SIZE + 16
 )
 
 type MiningPlot interface {
@@ -57,3 +59,12 @@ func (o *miningPlot) GetScoop(pos int) []byte {
 func (o *miningPlot) HashScoop(shabal256 hash.Hash, pos int) {
 	shabal256.Write(o.data[pos*SCOOP_SIZE : (pos+1)*SCOOP_SIZE])
 }
+
+/*func (o *miningPlot) CalcDeadlines(gensign, scoops []byte,deadline int64) {
+
+}
+func (o *miningPlot) GetDeadline(scoops []byte,) int64 {
+	numNonces := len(scoops)/64
+	caclWorkGroups = numNonces /
+}
+*/

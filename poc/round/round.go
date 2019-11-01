@@ -48,7 +48,6 @@ func (o *Round) calcScoopNumber(blockNumber int64, generationSignature []byte) i
 	if blockNumber > 0 && generationSignature != nil {
 		buf := make([]byte, 32+8)
 		copy(buf[:32], generationSignature)
-		//buf[:32] = generationSignature
 		binary.LittleEndian.PutUint64(buf[32:], uint64(blockNumber))
 		// generate new scoop number
 		md := util.NewShabal256()
