@@ -59,12 +59,3 @@ func (o *miningPlot) GetScoop(pos int) []byte {
 func (o *miningPlot) HashScoop(shabal256 hash.Hash, pos int) {
 	shabal256.Write(o.data[pos*SCOOP_SIZE : (pos+1)*SCOOP_SIZE])
 }
-
-/*func (o *miningPlot) CalcDeadlines(gensign, scoops []byte,deadline int64) {
-
-}
-func (o *miningPlot) GetDeadline(scoops []byte,) int64 {
-	numNonces := len(scoops)/64
-	caclWorkGroups = numNonces /
-}
-*/
