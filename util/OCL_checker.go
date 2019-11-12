@@ -92,45 +92,75 @@ func NewOCLChecker(platformId uint32, deviceId uint32) (*OCLChecker, error) {
 }
 func (o *OCLChecker) FindLowest(gensig, data []byte) int {
 
-	numNonces := uint64(len(data) / 64)
+	/*numNonces := uint64(len(data) / 64)
 	calcWorkgroups := numNonces / o.workGroupSize[0]
 
 	if numNonces%o.workGroupSize[0] != 0 {
 		calcWorkgroups++
+	}*/
+	var gensigTmp [32]byte
+
+	for k, v := range gensig {
+		gensigTmp[k] = v
+	}
+	var dataTmp [64]byte
+	for k, v := range data {
+		dataTmp[k] = v
 	}
 	var errCode cl.ErrorCode
-	errCode = cl.EnqueueWriteBuffer(o.queue, o.gensigMem, 0, 0, 32, unsafe.Pointer(&gensig), 0, nil, nil)
+	errCode = cl.EnqueueWriteBuffer(o.queue, o.gensigMem, cl.FALSE, 0, 32, unsafe.Pointer(&gensigTmp), 0, nil, nil)
 	if errCode != cl.SUCCESS {
 		return 0
 	}
-	dataMem := cl.CreateBuffer(o.context, cl.MEM_READ_ONLY, calcWorkgroups*o.workGroupSize[0]*64, nil, nil)
-	errCode = cl.EnqueueWriteBuffer(o.queue, dataMem, 0, 0, uint64(len(data)), unsafe.Pointer(&data), 0, nil, nil)
+	//calcWorkgroups*o.workGroupSize[0]*64
+	dataMem := cl.CreateBuffer(o.context, cl.MEM_READ_ONLY, o.workGroupSize[0]*64, nil, &errCode)
 	if errCode != cl.SUCCESS {
 		return 0
 	}
-	deadlineMem := cl.CreateBuffer(o.context, cl.MEM_READ_WRITE, calcWorkgroups*o.workGroupSize[0]*8, nil, nil)
+	errCode = cl.EnqueueWriteBuffer(o.queue, dataMem, cl.FALSE, 0, 64, unsafe.Pointer(&dataTmp), 0, nil, nil)
+	if errCode != cl.SUCCESS {
+		return 0
+	}
+	//calcWorkgroups*
+	deadlineMem := cl.CreateBuffer(o.context, cl.MEM_READ_WRITE, o.workGroupSize[0]*8, nil, &errCode)
+	if errCode != cl.SUCCESS {
+		return 0
+	}
+	gensigMem := o.gensigMem
 
-	cl.SetKernelArg(o.kernel[0], 0, 8, unsafe.Pointer(&o.gensigMem))
-	cl.SetKernelArg(o.kernel[0], 1, 8, unsafe.Pointer(&dataMem))
-	cl.SetKernelArg(o.kernel[0], 2, 8, unsafe.Pointer(&deadlineMem))
-	global := uint64(calcWorkgroups * o.workGroupSize[0])
+	errCode = cl.SetKernelArg(o.kernel[0], 0, uint64(unsafe.Sizeof(&gensigMem)), unsafe.Pointer(&gensigMem))
+	if errCode != cl.SUCCESS {
+		return 0
+	}
+	errCode = cl.SetKernelArg(o.kernel[0], 1, uint64(unsafe.Sizeof(&dataMem)), unsafe.Pointer(&dataMem))
+	if errCode != cl.SUCCESS {
+		return 0
+	}
+
+	errCode = cl.SetKernelArg(o.kernel[0], 2, uint64(unsafe.Sizeof(&deadlineMem)), unsafe.Pointer(&deadlineMem))
+	if errCode != cl.SUCCESS {
+		return 0
+	}
+	//calcWorkgroups *
+	global := uint64(o.workGroupSize[0])
 	local := o.workGroupSize[0]
-	cl.EnqueueNDRangeKernel(o.queue, o.kernel[0], 1, nil, &global, &local, 0, nil, nil)
+	errCode = cl.EnqueueNDRangeKernel(o.queue, o.kernel[0], 1, nil, &global, &local, 0, nil, nil)
 
-	cl.SetKernelArg(o.kernel[1], 0, 8, unsafe.Pointer(&deadlineMem))
+	errCode = cl.SetKernelArg(o.kernel[1], 0, uint64(unsafe.Sizeof(&deadlineMem)), unsafe.Pointer(&deadlineMem))
 
 	length := int64(len(data) / 64)
-	cl.SetKernelArg(o.kernel[1], 1, 4, unsafe.Pointer(&length))
-	cl.SetKernelArg(o.kernel[1], 2, uint64(4)*o.workGroupSize[1], nil)
-	cl.SetKernelArg(o.kernel[1], 3, uint64(8*o.workGroupSize[1]), nil)
-	cl.SetKernelArg(o.kernel[1], 4, 8, unsafe.Pointer(&o.bestMem))
+	errCode = cl.SetKernelArg(o.kernel[1], 1, 8, unsafe.Pointer(&length))
+	errCode = cl.SetKernelArg(o.kernel[1], 2, uint64(4)*o.workGroupSize[1], nil)
+	errCode = cl.SetKernelArg(o.kernel[1], 3, uint64(8*o.workGroupSize[1]), nil)
+	bestMem := o.bestMem
+	errCode = cl.SetKernelArg(o.kernel[1], 4, uint64(unsafe.Sizeof(&bestMem)), unsafe.Pointer(&bestMem))
 	global2 := uint64(o.workGroupSize[1])
 	local2 := global2
-	cl.EnqueueNDRangeKernel(o.queue, o.kernel[1], 1, nil, &global2, &local2, 0, nil, nil)
+	errCode = cl.EnqueueNDRangeKernel(o.queue, o.kernel[1], 1, nil, &global2, &local2, 0, nil, nil)
 	best := int(0)
-	cl.EnqueueReadBuffer(o.queue, o.bestMem, 1, 0, 4, unsafe.Pointer(&best), 0, nil, nil)
-	cl.ReleaseMemObject(dataMem)
-	cl.ReleaseMemObject(deadlineMem)
+	errCode = cl.EnqueueReadBuffer(o.queue, o.bestMem, cl.TRUE, 0, 4, unsafe.Pointer(&best), 0, nil, nil)
+	errCode = cl.ReleaseMemObject(dataMem)
+	errCode = cl.ReleaseMemObject(deadlineMem)
 	return best
 }
 
@@ -645,12 +675,13 @@ __kernel void reduce_best(__global unsigned long* deadlines, unsigned int length
 ` + "\x00"
 
 func (o *OCLChecker) fillResource(filePath string) error {
-	/*
-		buf, err := ioutil.ReadFile(filePath)
-		if err != nil {
-			return err
-		}*/
-	//string(buf[:]) + "\x00"
+
+	/*buf, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+	KernelSource := string(buf[:]) + "\x00"
+	*/
 	src := cl.Str(KernelSource)
 	var errcode cl.ErrorCode
 	program := cl.CreateProgramWithSource(o.context, 1, &src, nil, &errcode)

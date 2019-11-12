@@ -25,17 +25,18 @@ func Test_calcScoopNumber(t *testing.T) {
 	plotcal := new(plots.PlotCalculatorImpl)
 	scoop2 := plotcal.CalculateScoop(signature, 1230000)
 	assert.Equal(t, scoop, scoop2)
-	deadline := plotcal.CalculateDeadline(201910271200, 1, signature, scoop, 18325193796, 1)
-	t.Log(deadline.Int64())
 
+	deadline := plotcal.CalculateDeadline(201910271200, 1, signature, scoop, 18325193796, 1)
 	t.Log(time.ParseDuration(deadline.String() + "us"))
-	/*miner := util.NewMiningPlot(201910271200, 1000)
+
+	miner := util.NewMiningPlot(201910271200, 1)
 	scoopdata := miner.GetScoop(scoop)
 	deadline2 := oclchecker.FindLowest(signature, scoopdata)
-	t.Log(deadline2)*/
+	t.Log(deadline2)
 	//oclchecker.FindLowest(signature)
 	//oclchecker.FindLowest(signature, scoop)
 	//plot := util.NewMiningPlot(201910271200, scoop)
+
 	t.Log(oclchecker)
 }
 
