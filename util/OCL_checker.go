@@ -110,20 +110,20 @@ func (o *OCLChecker) FindLowest(gensig, data []byte) int {
 	}
 	deadlineMem := cl.CreateBuffer(o.context, cl.MEM_READ_WRITE, calcWorkgroups*o.workGroupSize[0]*8, nil, nil)
 
-	cl.SetKernelArg(o.kernel[0], 0, uint64(unsafe.Sizeof(&cl.Mem{})), unsafe.Pointer(&o.gensigMem))
-	cl.SetKernelArg(o.kernel[0], 1, uint64(unsafe.Sizeof(&cl.Mem{})), unsafe.Pointer(&dataMem))
-	cl.SetKernelArg(o.kernel[0], 2, uint64(unsafe.Sizeof(&cl.Mem{})), unsafe.Pointer(&deadlineMem))
+	cl.SetKernelArg(o.kernel[0], 0, 8, unsafe.Pointer(&o.gensigMem))
+	cl.SetKernelArg(o.kernel[0], 1, 8, unsafe.Pointer(&dataMem))
+	cl.SetKernelArg(o.kernel[0], 2, 8, unsafe.Pointer(&deadlineMem))
 	global := uint64(calcWorkgroups * o.workGroupSize[0])
 	local := o.workGroupSize[0]
 	cl.EnqueueNDRangeKernel(o.queue, o.kernel[0], 1, nil, &global, &local, 0, nil, nil)
 
-	cl.SetKernelArg(o.kernel[1], 0, uint64(unsafe.Sizeof(&cl.Mem{})), unsafe.Pointer(&deadlineMem))
+	cl.SetKernelArg(o.kernel[1], 0, 8, unsafe.Pointer(&deadlineMem))
 
 	length := int64(len(data) / 64)
-	cl.SetKernelArg(o.kernel[1], 1, uint64(4), unsafe.Pointer(&length))
+	cl.SetKernelArg(o.kernel[1], 1, 4, unsafe.Pointer(&length))
 	cl.SetKernelArg(o.kernel[1], 2, uint64(4)*o.workGroupSize[1], nil)
 	cl.SetKernelArg(o.kernel[1], 3, uint64(8*o.workGroupSize[1]), nil)
-	cl.SetKernelArg(o.kernel[1], 4, uint64(unsafe.Sizeof(&cl.Mem{})), unsafe.Pointer(&o.bestMem))
+	cl.SetKernelArg(o.kernel[1], 4, 8, unsafe.Pointer(&o.bestMem))
 	global2 := uint64(o.workGroupSize[1])
 	local2 := global2
 	cl.EnqueueNDRangeKernel(o.queue, o.kernel[1], 1, nil, &global2, &local2, 0, nil, nil)

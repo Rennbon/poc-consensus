@@ -1,9 +1,11 @@
 package round
 
 import (
+	"github.com/magiconair/properties/assert"
 	"github.com/rennbon/consensus/poc/plots"
 	"github.com/rennbon/consensus/util"
 	"testing"
+	"time"
 )
 
 func Test_calcScoopNumber(t *testing.T) {
@@ -20,8 +22,21 @@ func Test_calcScoopNumber(t *testing.T) {
 	signature[3] = 4
 	signature[4] = 5
 	scoop := r.calcScoopNumber(1230000, signature)
-	oclchecker.FindLowest(signature, scoop)
-	plot := util.NewMiningPlot(201910271200, scoop)
+	plotcal := new(plots.PlotCalculatorImpl)
+	scoop2 := plotcal.CalculateScoop(signature, 1230000)
+	assert.Equal(t, scoop, scoop2)
+	deadline := plotcal.CalculateDeadline(201910271200, 1, signature, scoop, 18325193796, 1)
+	t.Log(deadline.Int64())
+
+	t.Log(time.ParseDuration(deadline.String() + "us"))
+	/*miner := util.NewMiningPlot(201910271200, 1000)
+	scoopdata := miner.GetScoop(scoop)
+	deadline2 := oclchecker.FindLowest(signature, scoopdata)
+	t.Log(deadline2)*/
+	//oclchecker.FindLowest(signature)
+	//oclchecker.FindLowest(signature, scoop)
+	//plot := util.NewMiningPlot(201910271200, scoop)
+	t.Log(oclchecker)
 }
 
 func Test_calculateResult(t *testing.T) {

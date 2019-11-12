@@ -14,6 +14,7 @@ func TestNewOCLChecker(t *testing.T) {
 		return
 	}
 	t.Log(oclchecker)
+
 }
 
 func TestCl(t *testing.T) {

@@ -44,7 +44,7 @@ func (o *Round) isCurrentRound(currentBlockNumber int64, currentGenerationSignat
 		bytes.Equal(o.generationSignature, currentGenerationSignature)
 }
 
-func (o *Round) calcScoopNumber(blockNumber int64, generationSignature []byte) int64 {
+func (o *Round) calcScoopNumber(blockNumber int64, generationSignature []byte) int {
 	if blockNumber > 0 && generationSignature != nil {
 		buf := make([]byte, 32+8)
 		copy(buf[:32], generationSignature)
@@ -53,7 +53,8 @@ func (o *Round) calcScoopNumber(blockNumber int64, generationSignature []byte) i
 		md := util.NewShabal256()
 		md.Write(buf)
 		hashnum := big.NewInt(0).SetBytes(md.Sum(nil))
-		return hashnum.Mod(hashnum, big.NewInt(int64(util.SCOOPS_PER_PLOT))).Int64()
+		scoopnum := hashnum.Mod(hashnum, big.NewInt(int64(util.SCOOPS_PER_PLOT))).Int64()
+		return int(scoopnum)
 	}
 	return 0
 }

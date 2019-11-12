@@ -9,7 +9,7 @@ import (
 type PlotCalculator interface {
 	CalculateGenerationSignature(lastGenSig []byte, lastGenId int64) []byte
 
-	CalculateScoop(genSig []byte, height int64) int64
+	CalculateScoop(genSig []byte, height int64) int
 
 	CalculateHit1(accountId int64, nonce int, genSig []byte, scoop, pocVersion int) *big.Int
 
@@ -38,7 +38,7 @@ func (o *PlotCalculatorImpl) CalculateHit2(nonce int, genSig, scoopData []byte) 
 	hash := md.Sum(nil)
 	return big.NewInt(0).SetBytes([]byte{hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]})
 }
-func (o *PlotCalculatorImpl) CalculateScoop(genSig []byte, height int64) int64 {
+func (o *PlotCalculatorImpl) CalculateScoop(genSig []byte, height int64) int {
 	shabal256 := util.NewShabal256()
 	shabal256.Write(genSig)
 	buff := make([]byte, 8)
@@ -46,7 +46,8 @@ func (o *PlotCalculatorImpl) CalculateScoop(genSig []byte, height int64) int64 {
 	shabal256.Write(buff)
 	sum := shabal256.Sum(nil)
 	hashnum := big.NewInt(0).SetBytes(sum)
-	return hashnum.Mod(hashnum, big.NewInt(int64(util.SCOOPS_PER_PLOT))).Int64()
+	scoopnum := hashnum.Mod(hashnum, big.NewInt(int64(util.SCOOPS_PER_PLOT))).Int64()
+	return int(scoopnum)
 }
 func (o *PlotCalculatorImpl) CalculateGenerationSignature(lastGenSig []byte, lastGenId int64) []byte {
 	shabal256 := util.NewShabal256()
