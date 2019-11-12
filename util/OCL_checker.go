@@ -90,6 +90,49 @@ func NewOCLChecker(platformId uint32, deviceId uint32) (*OCLChecker, error) {
 	ocl.bestMem = cl.CreateBuffer(context, cl.MEM_WRITE_ONLY, 400, nil, nil)
 	return ocl, nil
 }
+func (o *OCLChecker) FindLowest(gensig, data []byte) int {
+
+	numNonces := uint64(len(data) / 64)
+	calcWorkgroups := numNonces / o.workGroupSize[0]
+
+	if numNonces%o.workGroupSize[0] != 0 {
+		calcWorkgroups++
+	}
+	var errCode cl.ErrorCode
+	errCode = cl.EnqueueWriteBuffer(o.queue, o.gensigMem, 0, 0, 32, unsafe.Pointer(&gensig), 0, nil, nil)
+	if errCode != cl.SUCCESS {
+		return 0
+	}
+	dataMem := cl.CreateBuffer(o.context, cl.MEM_READ_ONLY, calcWorkgroups*o.workGroupSize[0]*64, nil, nil)
+	errCode = cl.EnqueueWriteBuffer(o.queue, dataMem, 0, 0, uint64(len(data)), unsafe.Pointer(&data), 0, nil, nil)
+	if errCode != cl.SUCCESS {
+		return 0
+	}
+	deadlineMem := cl.CreateBuffer(o.context, cl.MEM_READ_WRITE, calcWorkgroups*o.workGroupSize[0]*8, nil, nil)
+
+	cl.SetKernelArg(o.kernel[0], 0, uint64(unsafe.Sizeof(cl.Mem{})), unsafe.Pointer(&o.gensigMem))
+	cl.SetKernelArg(o.kernel[0], 1, uint64(unsafe.Sizeof(cl.Mem{})), unsafe.Pointer(&dataMem))
+	cl.SetKernelArg(o.kernel[0], 2, uint64(unsafe.Sizeof(cl.Mem{})), unsafe.Pointer(&deadlineMem))
+	global := uint64(calcWorkgroups * o.workGroupSize[0])
+	local := o.workGroupSize[0]
+	cl.EnqueueNDRangeKernel(o.queue, o.kernel[0], 1, nil, &global, &local, 0, nil, nil)
+
+	cl.SetKernelArg(o.kernel[1], 0, uint64(unsafe.Sizeof(cl.Mem{})), unsafe.Pointer(&deadlineMem))
+
+	length := int64(len(data) / 64)
+	cl.SetKernelArg(o.kernel[1], 1, uint64(4), unsafe.Pointer(&length))
+	cl.SetKernelArg(o.kernel[1], 2, uint64(4)*o.workGroupSize[1], nil)
+	cl.SetKernelArg(o.kernel[1], 3, uint64(8*o.workGroupSize[1]), nil)
+	cl.SetKernelArg(o.kernel[1], 4, uint64(unsafe.Sizeof(cl.Mem{})), unsafe.Pointer(&o.bestMem))
+	global2 := uint64(o.workGroupSize[1])
+	local2 := global2
+	cl.EnqueueNDRangeKernel(o.queue, o.kernel[1], 1, nil, &global2, &local2, 0, nil, nil)
+	best := int(0)
+	cl.EnqueueReadBuffer(o.queue, o.bestMem, 1, 0, 4, unsafe.Pointer(&best), 0, nil, nil)
+	cl.ReleaseMemObject(dataMem)
+	cl.ReleaseMemObject(deadlineMem)
+	return best
+}
 
 var KernelSource = `
 typedef unsigned int sph_u32;
