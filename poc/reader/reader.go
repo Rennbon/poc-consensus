@@ -82,7 +82,7 @@ func (o *reader) read(previousBlockNumber, blockNumber int64, generationSignatur
 		} else {
 			if o.isCompatibleWithCurrentPoc(drivePocVersion) {
 				//2
-				scoopNumber, blockNumber, generationSignature, pd
+				//scoopNumber, blockNumber, generationSignature, pd
 				//scoopNumber, blockNumber, generationSignature, pd
 				//ReaderLoadDriveTask readerLoadDriveTask = context.getBean(ReaderLoadDriveTask.class);
 				//readerLoadDriveTask.init(scoopNumber, blockNumber, generationSignature, pd);

@@ -53,6 +53,7 @@ type plotFile struct {
 	pocVersion PocVersion
 }
 
+//chunkPartNonces: 切分间隔，内部会通过算法数据晃动
 func NewPlotFile(path string, chunkPartNonces int64) PlotFile {
 	pf := &plotFile{
 		filePath:             path,
@@ -167,7 +168,7 @@ type LoadedPart struct {
 	PlotFilePath        string
 }
 
-//非 pf方法
+//获取指定scoop number的等差排列数据，64byte一组
 func (o *plotFile) GetLoadedParts(scoopNumber int64) (<-chan *LoadedPart, error) {
 	file, err := os.OpenFile(o.filePath, os.O_RDONLY, os.ModeSocket)
 	if err != nil {
