@@ -2,18 +2,25 @@ package plots
 
 import "log"
 
-type PlotDrive struct {
-	plotFiles []*PlotFile
+type PlotDrive interface {
+	GetPlotFiles() []PlotFile
+	GetDirectory() string
+	collectChunkPartStartNonces() map[string]int64
+	GetSize() int64
+	GetDrivePocVersion() PocVersion
+}
+type plotDrive struct {
+	plotFiles []PlotFile
 	directory string
 }
 
-func NewPlotDrive(directory string, plotFilePaths []string, chunkPartNonces int64) *PlotDrive {
-	o := &PlotDrive{
+func NewPlotDrive(directory string, plotFilePaths []string, chunkPartNonces int64) PlotDrive {
+	o := &plotDrive{
 		directory: directory,
-		plotFiles: make([]*PlotFile, 0, len(plotFilePaths)),
+		plotFiles: make([]PlotFile, 0, len(plotFilePaths)),
 	}
 	for _, v := range plotFilePaths {
-		pf := NewPlotFile(v, chunkPartNonces)
+		pf := NewPlotFile(directory+v, chunkPartNonces)
 		o.plotFiles = append(o.plotFiles, pf)
 		if pf.GetStaggeramt()%pf.getNumberOfParts() != 0 {
 			log.Print("could not calculate valid numOfParts" + v)
@@ -22,13 +29,13 @@ func NewPlotDrive(directory string, plotFilePaths []string, chunkPartNonces int6
 	return o
 }
 
-func (o *PlotDrive) GetPlotFiles() []*PlotFile {
+func (o *plotDrive) GetPlotFiles() []PlotFile {
 	return o.plotFiles
 }
-func (o *PlotDrive) GetDirectory() string {
+func (o *plotDrive) GetDirectory() string {
 	return o.directory
 }
-func (o *PlotDrive) collectChunkPartStartNonces() map[string]int64 {
+func (o *plotDrive) collectChunkPartStartNonces() map[string]int64 {
 	m := make(map[string]int64)
 	for _, v := range o.plotFiles {
 		cpsn := v.getChunkPartStartNonces()
@@ -43,14 +50,14 @@ func (o *PlotDrive) collectChunkPartStartNonces() map[string]int64 {
 
 	return m
 }
-func (o *PlotDrive) GetSize() int64 {
+func (o *plotDrive) GetSize() int64 {
 	size := int64(0)
 	for _, v := range o.plotFiles {
 		size += v.GetSize()
 	}
 	return size
 }
-func (o *PlotDrive) GetDrivePocVersion() PocVersion {
+func (o *plotDrive) GetDrivePocVersion() PocVersion {
 	pv := PocVersion(0)
 	for _, v := range o.plotFiles {
 		if pv == 0 {

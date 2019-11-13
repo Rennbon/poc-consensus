@@ -4,6 +4,7 @@ import (
 	"github.com/magiconair/properties/assert"
 	"github.com/rennbon/consensus/poc/plots"
 	"github.com/rennbon/consensus/util"
+	"math/big"
 	"testing"
 	"time"
 )
@@ -21,16 +22,20 @@ func Test_calcScoopNumber(t *testing.T) {
 	signature[2] = 3
 	signature[3] = 4
 	signature[4] = 5
-	scoop := r.calcScoopNumber(1230000, signature)
+	scoopNum1 := r.calcScoopNumber(1230000, signature)
 	plotcal := new(plots.PlotCalculatorImpl)
-	scoop2 := plotcal.CalculateScoop(signature, 1230000)
-	assert.Equal(t, scoop, scoop2)
-
-	deadline := plotcal.CalculateDeadline(201910271200, 1, signature, scoop, 18325193796, 1)
+	scoopNum2 := plotcal.CalculateScoop(signature, 1230000)
+	assert.Equal(t, scoopNum1, scoopNum2)
+	t.Log(scoopNum1)
+	deadline := plotcal.CalculateDeadline(201910271200, 300000000, signature, scoopNum1, 18325193796, 2)
 	t.Log(time.ParseDuration(deadline.String() + "us"))
 
-	miner := util.NewMiningPlot(201910271200, 1)
-	scoopdata := miner.GetScoop(scoop)
+	miner := util.NewMiningPlot(201910271200, 300000000)
+	scoopdata := miner.GetScoop(scoopNum2)
+	hit := plotcal.CalculateHit2(signature, scoopdata)
+	t.Log(time.ParseDuration(hit.Div(hit, big.NewInt(18325193796)).String() + "us"))
+
+	//opencl
 	deadline2 := oclchecker.FindLowest(signature, scoopdata)
 	t.Log(deadline2)
 	//oclchecker.FindLowest(signature)
@@ -41,8 +46,8 @@ func Test_calcScoopNumber(t *testing.T) {
 }
 
 func Test_calculateResult(t *testing.T) {
-	t.Log("finish")
-	//r := &Round{}
+
+	r := &Round{}
 	signature := make([]byte, 32)
 	signature[0] = 1
 	signature[1] = 2
@@ -50,15 +55,15 @@ func Test_calculateResult(t *testing.T) {
 	signature[3] = 4
 	signature[4] = 5
 	pf := plots.NewPlotFile("/Users/rennbon/Downloads/Plots/201910271200_100000_7616", 1)
-	lpch, err := pf.GetLoadedParts(1212)
+	lpch, err := pf.GetLoadedParts(3838)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 	for ch := range lpch {
-		t.Log(ch.ChunkPartStartNonce.String())
+		//t.Log(ch.ChunkPartStartNonce.String())
 
-		//r.calculateResult(ch.Scoops, signature, ch.ChunkPartStartNonce)
+		r.calculateResult(ch.Scoops, signature, 1)
 
 	}
 

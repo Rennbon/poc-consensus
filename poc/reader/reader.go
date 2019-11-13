@@ -62,16 +62,16 @@ func (o *reader) read(previousBlockNumber, blockNumber int64, generationSignatur
 
 	orderedPlotDrives := o.plots.GetPlotDrives()
 	linq.From(orderedPlotDrives).Where(func(o interface{}) bool {
-		return o.(*plots.PlotDrive).GetDrivePocVersion() != 0
+		return o.(plots.PlotDrive).GetDrivePocVersion() != 0
 	}).ToSlice(orderedPlotDrives)
 
 	linq.From(orderedPlotDrives).Sort(
 		func(i interface{}, j interface{}) bool {
-			return i.(*plots.PlotDrive).GetSize() < j.(*plots.PlotDrive).GetSize()
+			return i.(plots.PlotDrive).GetSize() < j.(plots.PlotDrive).GetSize()
 		},
 	).Sort(
 		func(i interface{}, j interface{}) bool {
-			return o.isCompatibleWithCurrentPoc(i.(*plots.PlotDrive).GetDrivePocVersion())
+			return o.isCompatibleWithCurrentPoc(i.(plots.PlotDrive).GetDrivePocVersion())
 		},
 	).ToSlice(orderedPlotDrives)
 
@@ -81,11 +81,14 @@ func (o *reader) read(previousBlockNumber, blockNumber int64, generationSignatur
 			logrus.Warn("Skipped '" + pd.GetDirectory() + "', different POC versions on one drive is not supported! (Workaround: put them in different directories and add them to 'plotFilePaths')")
 		} else {
 			if o.isCompatibleWithCurrentPoc(drivePocVersion) {
+				//2
+				scoopNumber, blockNumber, generationSignature, pd
 				//scoopNumber, blockNumber, generationSignature, pd
 				//ReaderLoadDriveTask readerLoadDriveTask = context.getBean(ReaderLoadDriveTask.class);
 				//readerLoadDriveTask.init(scoopNumber, blockNumber, generationSignature, pd);
 				//readerPool.execute(readerLoadDriveTask);
 			} else {
+				//1
 				//ReaderConvertLoadDriveTask readerConvertLoadDriveTask = context.getBean(ReaderConvertLoadDriveTask.class);
 				//readerConvertLoadDriveTask.init(scoopNumber, blockNumber, generationSignature, plotDrive);
 				//readerPool.execute(readerConvertLoadDriveTask);
@@ -94,6 +97,7 @@ func (o *reader) read(previousBlockNumber, blockNumber int64, generationSignatur
 	}
 
 }
+
 func (o *reader) isCompatibleWithCurrentPoc(pocVersion plots.PocVersion) bool {
 	return plots.POC_2 == pocVersion
 }

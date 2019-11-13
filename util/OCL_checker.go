@@ -148,8 +148,8 @@ func (o *OCLChecker) FindLowest(gensig, data []byte) int {
 
 	errCode = cl.SetKernelArg(o.kernel[1], 0, uint64(unsafe.Sizeof(&deadlineMem)), unsafe.Pointer(&deadlineMem))
 
-	length := int64(len(data) / 64)
-	errCode = cl.SetKernelArg(o.kernel[1], 1, 8, unsafe.Pointer(&length))
+	length := len(data)
+	errCode = cl.SetKernelArg(o.kernel[1], 1, 4, unsafe.Pointer(&length))
 	errCode = cl.SetKernelArg(o.kernel[1], 2, uint64(4)*o.workGroupSize[1], nil)
 	errCode = cl.SetKernelArg(o.kernel[1], 3, uint64(8*o.workGroupSize[1]), nil)
 	bestMem := o.bestMem
@@ -159,6 +159,9 @@ func (o *OCLChecker) FindLowest(gensig, data []byte) int {
 	errCode = cl.EnqueueNDRangeKernel(o.queue, o.kernel[1], 1, nil, &global2, &local2, 0, nil, nil)
 	best := int(0)
 	errCode = cl.EnqueueReadBuffer(o.queue, o.bestMem, cl.TRUE, 0, 4, unsafe.Pointer(&best), 0, nil, nil)
+
+	//errCode = cl.EnqueueNDRangeKernel(o.queue, o.kernel[2], 1, nil, &global2, &local2, 0, nil, nil)
+
 	errCode = cl.ReleaseMemObject(dataMem)
 	errCode = cl.ReleaseMemObject(deadlineMem)
 	return best

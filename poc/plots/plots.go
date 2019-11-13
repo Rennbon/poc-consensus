@@ -11,24 +11,24 @@ import (
 
 type Plots interface {
 	GetSize() int64
-	GetPlotDrives() []*PlotDrive
+	GetPlotDrives() []PlotDrive
 	printPlotFiles()
 	/* gets plot file by plot file start nonce. */
-	GetPlotFileByPlotFileStartNonce(plotFileStartNonce int64) *PlotFile
+	GetPlotFileByPlotFileStartNonce(plotFileStartNonce int64) PlotFile
 	/* gets chunk part start nonces. */
 	GetChunkPartStartNonces() map[string]int64
 
 	/* gets plot file by chunk part start nonce. */
-	GetPlotFileByChunkPartStartNonce(chunkPartStartNonce string) *PlotFile
+	GetPlotFileByChunkPartStartNonce(chunkPartStartNonce string) PlotFile
 }
 type plots struct {
-	plotDrives           []*PlotDrive
+	plotDrives           []PlotDrive
 	chunkPartStartNonces map[string]int64
 }
 
-func NewPlots(numericAccountId string) *plots {
+func NewPlots(numericAccountId string) Plots {
 	o := &plots{
-		plotDrives:           make([]*PlotDrive, 0, 256),
+		plotDrives:           make([]PlotDrive, 0, 256),
 		chunkPartStartNonces: make(map[string]int64),
 	}
 	plotFilesLookup := collectPlotFiles(poc.CoreProperties.GetPlotPaths(), numericAccountId)
@@ -79,7 +79,7 @@ func (o *plots) GetSize() int64 {
 	}
 	return size
 }
-func (o *plots) GetPlotDrives() []*PlotDrive {
+func (o *plots) GetPlotDrives() []PlotDrive {
 	return o.plotDrives
 }
 func (o *plots) printPlotFiles() {
@@ -91,7 +91,7 @@ func (o *plots) printPlotFiles() {
 }
 
 /* gets plot file by plot file start nonce. */
-func (o *plots) GetPlotFileByPlotFileStartNonce(plotFileStartNonce int64) *PlotFile {
+func (o *plots) GetPlotFileByPlotFileStartNonce(plotFileStartNonce int64) PlotFile {
 	for _, pd := range o.GetPlotDrives() {
 		for _, pf := range pd.GetPlotFiles() {
 			if strings.Contains(pf.GetFilename(), strconv.FormatInt(plotFileStartNonce, 10)) {
@@ -108,7 +108,7 @@ func (o *plots) GetChunkPartStartNonces() map[string]int64 {
 }
 
 /* gets plot file by chunk part start nonce. */
-func (o *plots) GetPlotFileByChunkPartStartNonce(chunkPartStartNonce string) *PlotFile {
+func (o *plots) GetPlotFileByChunkPartStartNonce(chunkPartStartNonce string) PlotFile {
 	for _, pd := range o.GetPlotDrives() {
 		for _, pf := range pd.GetPlotFiles() {
 			if _, ok := pf.getChunkPartStartNonces()[chunkPartStartNonce]; ok {

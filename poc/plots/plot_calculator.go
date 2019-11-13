@@ -13,12 +13,13 @@ type PlotCalculator interface {
 
 	CalculateHit1(accountId int64, nonce int, genSig []byte, scoop, pocVersion int) *big.Int
 
-	CalculateHit2(nonce int, genSig, scoopData []byte) *big.Int
+	CalculateHit2(genSig, scoopData []byte) *big.Int
 
 	CalculateDeadline(accountId int64, nonce int, genSig []byte, scoop int, baseTarget int64, pocVersion int) *big.Int
 }
 
 type PlotCalculatorImpl struct {
+	accountId int64
 }
 
 func (o *PlotCalculatorImpl) CalculateHit1(accountId int64, nonce int, genSig []byte, scoop, pocVersion int) *big.Int {
@@ -29,13 +30,11 @@ func (o *PlotCalculatorImpl) CalculateHit1(accountId int64, nonce int, genSig []
 	hash := shabal256.Sum(nil)
 	return big.NewInt(0).SetBytes([]byte{hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]})
 }
-func (o *PlotCalculatorImpl) CalculateHit2(nonce int, genSig, scoopData []byte) *big.Int {
-	md := util.NewShabal256()
-	md.Reset()
-	md.Write(genSig)
-	st := nonce * util.SCOOP_SIZE
-	md.Write(scoopData[st : st+util.SCOOP_SIZE])
-	hash := md.Sum(nil)
+func (o *PlotCalculatorImpl) CalculateHit2(genSig, scoopData []byte) *big.Int {
+	shabal256 := util.NewShabal256()
+	shabal256.Write(genSig)
+	shabal256.Write(scoopData)
+	hash := shabal256.Sum(nil)
 	return big.NewInt(0).SetBytes([]byte{hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]})
 }
 func (o *PlotCalculatorImpl) CalculateScoop(genSig []byte, height int64) int {

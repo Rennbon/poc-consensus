@@ -11,23 +11,50 @@ import (
 	"strings"
 )
 
-type PlotFile struct {
-	chunkPartStartNonces map[string]int64 //K: bigInt V:int64    key -> size
-	filePath             string
-	chunkPartNonces      int64
-	numOfParts           int64
-	numOfChunks          int64
-	fileName             string
-	address              int64
-	startNonce           *big.Int
-	plots                int64
-	staggeramt           int64
-	size                 int64
-	pocVersion           PocVersion
+type PlotFile interface {
+	GetSize() int64
+	GetFilePath() string
+	GetFilename() string
+	GetAddress() int64
+	GetStartnonce() *big.Int
+	GetPlots() int64
+	GetStaggeramt() int64
+	GetNumberOfChunks() int64
+	getNumberOfParts() int64
+	SetNumberOfParts(numOfParts int64)
+	getChunkPartStartNonces() map[string]int64
+	GetPocVersion() PocVersion
+	calculateNumberOfParts(staggeramt int64) int64
+	GetLoadedParts(scoopNumber int64) (<-chan *LoadedPart, error)
 }
 
-func NewPlotFile(path string, chunkPartNonces int64) *PlotFile {
-	pf := &PlotFile{
+//一组scoop 为64byte
+type plotFile struct {
+	//块数 及其 对应的 byte数组大小
+	chunkPartStartNonces map[string]int64 //K: bigInt V:int64    key -> size
+	filePath             string
+	//一个chunk中多少nonce
+	chunkPartNonces int64
+	//分割的块数
+	numOfParts int64
+	//v2下为 1
+	numOfChunks int64
+	fileName    string
+	address     int64
+	//开始的nonce
+	startNonce *big.Int
+	//nonce数
+	plots int64
+	//v2 等同nonce数
+	staggeramt int64
+	//总plot大小
+	size int64
+	//版本 只支持v2
+	pocVersion PocVersion
+}
+
+func NewPlotFile(path string, chunkPartNonces int64) PlotFile {
+	pf := &plotFile{
 		filePath:             path,
 		chunkPartNonces:      chunkPartNonces,
 		chunkPartStartNonces: make(map[string]int64),
@@ -60,51 +87,54 @@ func NewPlotFile(path string, chunkPartNonces int64) *PlotFile {
 	}
 	return pf
 }
-func (o *PlotFile) GetSize() int64 {
+func (o *plotFile) GetSize() int64 {
 	return o.size
 }
 
-func (o *PlotFile) GetFilePath() string {
+func (o *plotFile) GetFilePath() string {
 	return o.filePath
 }
 
-func (o *PlotFile) GetFilename() string {
+func (o *plotFile) GetFilename() string {
 	return o.fileName
 }
 
-func (o *PlotFile) GetAddress() int64 {
+func (o *plotFile) GetAddress() int64 {
 	return o.address
 }
 
-func (o *PlotFile) GetStartnonce() *big.Int {
+func (o *plotFile) GetStartnonce() *big.Int {
 	return o.startNonce
 }
-func (o *PlotFile) GetPlots() int64 {
+func (o *plotFile) GetPlots() int64 {
 	return o.plots
 }
-func (o *PlotFile) GetStaggeramt() int64 {
+func (o *plotFile) GetStaggeramt() int64 {
 	return o.staggeramt
 }
 
-func (o *PlotFile) GetNumberOfChunks() int64 {
+func (o *plotFile) GetNumberOfChunks() int64 {
 	return o.numOfChunks
 }
 
-func (o *PlotFile) getNumberOfParts() int64 {
+func (o *plotFile) getNumberOfParts() int64 {
 	return o.numOfParts
 }
 
-func (o *PlotFile) SetNumberOfParts(numOfParts int64) {
+func (o *plotFile) SetNumberOfParts(numOfParts int64) {
 	o.numOfParts = numOfParts
 }
 
-func (o *PlotFile) getChunkPartStartNonces() map[string]int64 {
+func (o *plotFile) getChunkPartStartNonces() map[string]int64 {
 	return o.chunkPartStartNonces
 }
-func (o *PlotFile) GetPocVersion() PocVersion {
+func (o *plotFile) GetPocVersion() PocVersion {
 	return o.pocVersion
 }
-func (o *PlotFile) calculateNumberOfParts(staggeramt int64) int64 {
+
+// splitting into parts is not needed, but it seams to improve speed and enables us
+// to have steps of nearly same size
+func (o *plotFile) calculateNumberOfParts(staggeramt int64) int64 {
 	maxNumberOfParts := int64(100)
 	targetNoncesPerPart := int64(960000)
 	if o.chunkPartNonces != 0 {
@@ -137,7 +167,8 @@ type LoadedPart struct {
 	PlotFilePath        string
 }
 
-func (o *PlotFile) GetLoadedParts(scoopNumber int64) (<-chan *LoadedPart, error) {
+//非 pf方法
+func (o *plotFile) GetLoadedParts(scoopNumber int64) (<-chan *LoadedPart, error) {
 	file, err := os.OpenFile(o.filePath, os.O_RDONLY, os.ModeSocket)
 	if err != nil {
 		logrus.Warn("read file failed," + err.Error())
@@ -146,12 +177,13 @@ func (o *PlotFile) GetLoadedParts(scoopNumber int64) (<-chan *LoadedPart, error)
 	lpch := make(chan *LoadedPart, 1)
 	scoop_size := int64(util.SCOOP_SIZE)
 	currentScoopPosition := scoopNumber * o.GetStaggeramt() * scoop_size
+
 	partSize := o.GetStaggeramt() / o.getNumberOfParts()
 	partBuffer := make([]byte, partSize*scoop_size)
 	// optimized plotFiles only have one chunk!
 	go func() {
 		for chunkNumber := int64(0); chunkNumber < o.GetNumberOfChunks(); chunkNumber++ {
-			currentChunkPosition := chunkNumber * o.GetStaggeramt() * scoop_size
+			currentChunkPosition := chunkNumber * o.GetStaggeramt() * int64(util.PLOT_SIZE)
 			for partNumber := int64(0); partNumber < o.getNumberOfParts(); partNumber++ {
 				//TODO 验证区块高度和签名
 				//读流填充partBuffer

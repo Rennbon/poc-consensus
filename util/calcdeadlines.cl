@@ -456,6 +456,7 @@ __kernel void calculate_deadlines(__global unsigned char* gen_sig, __global unsi
 	deadlines[gid] = *((unsigned long*)out);
 }
 
+
 __kernel void reduce_best(__global unsigned long* deadlines, unsigned int length, __local unsigned int* best_pos, __local unsigned long* best_deadline, __global unsigned int* best) {
 	int gid = get_global_id(0);
 	int gsize = get_global_size(0);
