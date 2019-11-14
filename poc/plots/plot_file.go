@@ -1,7 +1,7 @@
 package plots
 
 import (
-	"github.com/rennbon/consensus/util"
+	"github.com/rennbon/consensus/poc/miner"
 	"github.com/sirupsen/logrus"
 	"math"
 	"math/big"
@@ -77,7 +77,7 @@ func NewPlotFile(path string, chunkPartNonces int64) PlotFile {
 		pf.numOfParts = pf.calculateNumberOfParts(pf.staggeramt)
 		pf.numOfChunks = 1
 	}
-	pf.size = pf.numOfChunks * pf.staggeramt * int64(util.PLOT_SIZE)
+	pf.size = pf.numOfChunks * pf.staggeramt * int64(miner.PLOT_SIZE)
 	chunkPartSize := pf.size / pf.numOfChunks / pf.numOfParts
 	for chunkNumber := int64(0); chunkNumber < pf.numOfChunks; chunkNumber++ {
 		for partNumber := int64(0); partNumber < pf.numOfParts; partNumber++ {
@@ -176,7 +176,7 @@ func (o *plotFile) GetLoadedParts(scoopNumber int64) (<-chan *LoadedPart, error)
 		return nil, nil
 	}
 	lpch := make(chan *LoadedPart, 1)
-	scoop_size := int64(util.SCOOP_SIZE)
+	scoop_size := int64(miner.SCOOP_SIZE)
 	currentScoopPosition := scoopNumber * o.GetStaggeramt() * scoop_size
 
 	partSize := o.GetStaggeramt() / o.getNumberOfParts()
@@ -184,7 +184,7 @@ func (o *plotFile) GetLoadedParts(scoopNumber int64) (<-chan *LoadedPart, error)
 	// optimized plotFiles only have one chunk!
 	go func() {
 		for chunkNumber := int64(0); chunkNumber < o.GetNumberOfChunks(); chunkNumber++ {
-			currentChunkPosition := chunkNumber * o.GetStaggeramt() * int64(util.PLOT_SIZE)
+			currentChunkPosition := chunkNumber * o.GetStaggeramt() * int64(miner.PLOT_SIZE)
 			for partNumber := int64(0); partNumber < o.getNumberOfParts(); partNumber++ {
 				//TODO 验证区块高度和签名
 				//读流填充partBuffer

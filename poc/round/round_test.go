@@ -2,8 +2,8 @@ package round
 
 import (
 	"github.com/magiconair/properties/assert"
+	"github.com/rennbon/consensus/poc/miner"
 	"github.com/rennbon/consensus/poc/plots"
-	"github.com/rennbon/consensus/util"
 	"math/big"
 	"testing"
 	"time"
@@ -11,7 +11,7 @@ import (
 
 func Test_calcScoopNumber(t *testing.T) {
 	r := &Round{}
-	oclchecker, err := util.NewOCLChecker(0, 2)
+	oclchecker, err := miner.NewOCLChecker(0, 2)
 	if err != nil {
 		t.Error(err)
 		return
@@ -28,13 +28,13 @@ func Test_calcScoopNumber(t *testing.T) {
 	assert.Equal(t, scoopNum1, scoopNum2)
 	t.Log(scoopNum1)
 	deadline := plotcal.CalculateDeadline(201910271200, 300000000, signature, scoopNum1, 18325193796, 2)
-	t.Log(time.ParseDuration(deadline.String() + "us"))
+	d1, _ := time.ParseDuration(deadline.String() + "us")
 
-	miner := util.NewMiningPlot(201910271200, 300000000)
+	miner := miner.NewMiningPlot(201910271200, 300000000)
 	scoopdata := miner.GetScoop(scoopNum2)
 	hit := plotcal.CalculateHit2(signature, scoopdata)
-	t.Log(time.ParseDuration(hit.Div(hit, big.NewInt(18325193796)).String() + "us"))
-
+	d2, _ := time.ParseDuration(hit.Div(hit, big.NewInt(18325193796)).String() + "us")
+	assert.Equal(t, d1, d2)
 	//opencl
 	deadline2 := oclchecker.FindLowest(signature, scoopdata)
 	t.Log(deadline2)

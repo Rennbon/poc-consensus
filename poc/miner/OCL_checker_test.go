@@ -1,4 +1,4 @@
-package util
+package miner
 
 import (
 	"github.com/go-gl/cl/v1.2/cl"

@@ -1,4 +1,4 @@
-package util
+package shabal
 
 import (
 	"encoding/hex"

@@ -1,7 +1,8 @@
-package util
+package miner
 
 import (
 	"encoding/binary"
+	"github.com/rennbon/consensus/crypto/shabal"
 	"hash"
 )
 
@@ -31,7 +32,7 @@ func NewMiningPlot(addr, nonce uint64) MiningPlot {
 	buff := make([]byte, 16)
 	binary.LittleEndian.PutUint64(buff[:8], addr)
 	binary.LittleEndian.PutUint64(buff[8:], nonce)
-	sb256 := NewShabal256()
+	sb256 := shabal.NewShabal256()
 	baseLen := len(buff)
 	gendata := make([]byte, PLOT_SIZE+baseLen)
 	copy(gendata[PLOT_SIZE:PLOT_SIZE+16], buff)

@@ -2,8 +2,8 @@ package reader
 
 import (
 	"github.com/ahmetb/go-linq"
+	"github.com/rennbon/consensus/common"
 	"github.com/rennbon/consensus/poc/plots"
-	"github.com/rennbon/consensus/util"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -58,7 +58,7 @@ func (o *reader) read(previousBlockNumber, blockNumber int64, generationSignatur
 	o.remainingCapacity = o.plots.GetSize()
 	o.capacity = o.plots.GetSize()
 	o.realRemainingCapacity = o.realCapacity
-	o.readerStartTime = util.ToMillisecond(time.Now())
+	o.readerStartTime = common.ToMillisecond(time.Now())
 
 	orderedPlotDrives := o.plots.GetPlotDrives()
 	linq.From(orderedPlotDrives).Where(func(o interface{}) bool {
