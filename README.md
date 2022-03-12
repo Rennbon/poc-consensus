@@ -1,1 +1,1 @@
-POC action in golang
+区块链poc共识go语言翻译，学习用
